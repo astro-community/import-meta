@@ -1,0 +1,41 @@
+{
+  "name": "@astropub/imports-root",
+  "type": "module",
+  "version": "0.1.0",
+  "workspaces": [
+    "demo",
+    "packages/*"
+  ],
+  "scripts": {
+    "bump:patch": "npm --workspaces --git-tag-version false version patch && npm --git-tag-version false version patch",
+    "bump:minor": "npm --workspaces --git-tag-version false version minor && npm --git-tag-version false version minor",
+    "bump:major": "npm --workspaces --git-tag-version false version major && npm --git-tag-version false version major",
+    "start": "astro --project-root demo dev",
+    "build": "astro --project-root demo build",
+    "serve": "astro --project-root demo preview",
+    "release": "npm --workspaces publish --access public"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "trailingComma": "es5",
+    "useTabs": true,
+    "overrides": [
+      {
+        "files": [
+          "*.json",
+          "*.md",
+          "*.stackblitzrc"
+        ],
+        "options": {
+          "useTabs": false
+        }
+      }
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "^17.0.14",
+    "astro": "^0.23.0-next.1"
+  },
+  "private": true
+}

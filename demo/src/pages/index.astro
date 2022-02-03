@@ -1,0 +1,21 @@
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<title>Astro: Index</title>
+		<style global>
+		img {
+			width: min(34em, 100%);
+		}
+		</style>
+	</head>
+	<body>
+		<h1>Astro: Index</h1>
+		<p><a href="about">Goto about</a></p>
+		<pre>{JSON.stringify({
+			url: import.meta,
+			page: import.meta.page,
+			request: import.meta.request,
+		}, null, '  ')}</pre>
+	</body>
+</html>

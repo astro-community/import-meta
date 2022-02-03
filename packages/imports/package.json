@@ -1,0 +1,26 @@
+{
+  "name": "@astropub/imports",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "import.d.ts",
+    "lib"
+  ],
+  "keywords": [
+    "astro",
+    "astro-plugin",
+    "file",
+    "import",
+    "meta",
+    "page",
+    "props",
+    "request",
+    "site"
+  ],
+  "private": true
+}

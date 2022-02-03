@@ -1,0 +1,32 @@
+---
+import Image from '../components/Image.astro'
+import data from '../components/data.json' assert { type: 'json' }
+import dataRaw from '../components/data.json' assert { type: 'raw' }
+import dataUrl from '../components/data.json' assert { type: 'url' }
+import dataBuf from '../components/data.json' assert { type: 'buffer' }
+import func from '../components/func.js' assert { type: 'js' }
+
+console.log({ data, dataRaw, dataUrl, dataBuf, func })
+---
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<title>Astro: About</title>
+		<style global>
+		img {
+			width: min(34em, 100%);
+		}
+		</style>
+	</head>
+	<body>
+		<h1>Astro: About</h1>
+		<p><a href=".">Goto index</a></p>
+		<pre>{JSON.stringify({
+			url: import.meta,
+			page: import.meta.page,
+			request: import.meta.request,
+		}, null, '  ')}</pre>
+		<Image src="kitten.jpg" />
+	</body>
+</html>

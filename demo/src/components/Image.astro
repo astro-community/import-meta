@@ -1,0 +1,11 @@
+---
+export interface Props {
+	src?: string
+	alt?: string
+}
+
+const { props } = import.meta
+
+props.src = '/@fs' + import.meta.page.resolve(props.src)
+---
+<img {...props} />
