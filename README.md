@@ -2,6 +2,14 @@
 
 **Astro Imports** lets you use advanced `import` features in Astro.
 
+## Import Assertions
+
+```js
+import data from './data.json' assert { type: 'json' }
+import dataRaw from './data.json' assert { type: 'raw' }
+import dataUrl from './data.json' assert { type: 'url' }
+```
+
 ## Import Meta Enhancements
 
 ```js

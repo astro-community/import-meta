@@ -1,6 +1,6 @@
 {
   "name": "@astropub/imports",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "main": "index.js",
   "exports": {
@@ -12,6 +12,9 @@
     "lib"
   ],
   "keywords": [
+    "assert",
+    "asserts",
+    "assertions",
     "astro",
     "astro-plugin",
     "file",
@@ -21,6 +24,5 @@
     "props",
     "request",
     "site"
-  ],
-  "private": true
+  ]
 }
