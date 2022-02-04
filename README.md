@@ -9,10 +9,10 @@
 import data from './data.json' assert { type: 'json' }
 
 // contents of data.json as plain text
-import dataRaw from './data.json' assert { type: 'text' }
+import dataText from './data.json' assert { type: 'text' }
 
 // url of data.json
-import dataUrl from './data.json' assert { type: 'url' }
+import datHref from './data.json' assert { type: 'url' }
 ```
 
 ## Import Meta Enhancements

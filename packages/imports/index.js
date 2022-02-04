@@ -85,8 +85,9 @@ export const importPlusPlugin = () => {
 					).then(
 						json => `export default ${JSON.stringify(json)}`
 					)
-	
+
 				case 'raw':
+				case 'text':
 					return fetch(resolveUrl).then(
 						response => response.text()
 					).then(

@@ -6,8 +6,8 @@
 
 ```js
 import data from './data.json' assert { type: 'json' }
-import dataRaw from './data.json' assert { type: 'raw' }
-import dataUrl from './data.json' assert { type: 'url' }
+import dataText from './data.json' assert { type: 'text' }
+import dataHref from './data.json' assert { type: 'url' }
 ```
 
 ## Import Meta Enhancements

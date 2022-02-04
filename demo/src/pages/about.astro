@@ -1,12 +1,12 @@
 ---
 import Image from '../components/Image.astro'
 import data from '../components/data.json' assert { type: 'json' }
-import dataRaw from '../components/data.json' assert { type: 'raw' }
-import dataUrl from '../components/data.json' assert { type: 'url' }
-import dataBuf from '../components/data.json' assert { type: 'buffer' }
+import dataText from '../components/data.json' assert { type: 'text' }
+import dataHref from '../components/data.json' assert { type: 'url' }
+import dataBuff from '../components/data.json' assert { type: 'buffer' }
 import func from '../components/func.js' assert { type: 'js' }
 
-console.log({ data, dataRaw, dataUrl, dataBuf, func })
+console.log({ data, dataText, dataHref, dataBuff, func })
 ---
 <html lang="en">
 	<head>
