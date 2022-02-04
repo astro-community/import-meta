@@ -5,35 +5,45 @@
 ## Import Assertions
 
 ```js
+// contents of data.json as a json object
 import data from './data.json' assert { type: 'json' }
-import dataRaw from './data.json' assert { type: 'raw' }
+
+// contents of data.json as plain text
+import dataRaw from './data.json' assert { type: 'text' }
+
+// url of data.json
 import dataUrl from './data.json' assert { type: 'url' }
 ```
 
 ## Import Meta Enhancements
 
 ```js
-/// resolves relative to wherever you're running import.meta.url
-/// IE: home/projects/github-itt8wn/demo/src/components/kitten.jpg
+// href of the current script
+// example: "home/projects/github-itt8wn/demo/src/components/Image.astro"
+import.meta.url
+
+// resolved href, relative to import.meta.url
+// example: "home/projects/github-itt8wn/demo/src/components/kitten.jpg"
 import.meta.resolve('kitten.jpg')
 
-/// behaves like import.meta.url, but the page import.meta is called from, instead of the component itself
-/// IE: /home/projects/github-itt8wn/demo/src/pages/index.astro
+// href of the current page, even if that is not the current script
+// example: "/home/projects/github-itt8wn/demo/src/pages/index.astro"
 import.meta.page.url
 
-/// resolves relative to the page import.meta is called from, instead of the component itself 
-/// IE: /home/projects/github-itt8wn/demo/src/pages/kitten.jpg
+// resolved href, relative to import.meta.page.url
+// example: "/home/projects/github-itt8wn/demo/src/pages/kitten.jpg"
 import.meta.page.resolve('kitten.jpg')
 
-/// behaves import.meta.url, but for the current request
-/// IE: http://localhost:3000/
+// href of the current request
+// example: "http://localhost:3000/"
 import.meta.request.url
 
-/// resolves relative to current request
-/// IE: http://localhost:3000/kitten.jpg
+// resolved href, relative to import.meta.request.url
+// example: "http://localhost:3000/kitten.jpg"
 import.meta.request.resolve('kitten.jpg')
 
-/// props, when within a component
+// props of the current component
+// example: { src: 'kitten.jpg', alt: 'kitten' }
 import.meta.props
 ```
 
