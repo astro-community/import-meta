@@ -13,15 +13,15 @@ import dataUrl from './data.json' assert { type: 'url' }
 ## Import Meta Enhancements
 
 ```js
-import.meta.resolve('kitten.jpg') // resolves relative to import.meta.url
+import.meta.resolve('kitten.jpg') // resolves relative to wherever you're running import.meta.url
 
-import.meta.page.url // import.meta.url, but for the current page file
+import.meta.page.url // behaves like import.meta.url, but relative to the page import.meta is called from, instead of the component itself 
 
-import.meta.page.resolve('kitten.jpg') // resolves relative to current page file
+import.meta.page.resolve('kitten.jpg') // resolves relative to the page import.meta is called from, instead of the component itself 
 
-import.meta.request.url // import.meta.url, but for the current request
+import.meta.request.url // behaves import.meta.url, but for the current request (like localhost:3000/page1/)
 
-import.meta.request.resolve('kitten.jpg') // resolves relative to current request
+import.meta.request.resolve('kitten.jpg') // resolves relative to current request (like localhost:3000/page1/)
 
 import.meta.props // props, when within a component
 ```
