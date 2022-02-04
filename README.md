@@ -13,17 +13,28 @@ import dataUrl from './data.json' assert { type: 'url' }
 ## Import Meta Enhancements
 
 ```js
-import.meta.resolve('kitten.jpg') // resolves relative to wherever you're running import.meta.url
+/// resolves relative to wherever you're running import.meta.url
+/// IE: home/projects/github-itt8wn/demo/src/components/kitten.jpg
+import.meta.resolve('kitten.jpg')
 
-import.meta.page.url // behaves like import.meta.url, but relative to the page import.meta is called from, instead of the component itself 
+/// behaves like import.meta.url, but the page import.meta is called from, instead of the component itself
+/// IE: /home/projects/github-itt8wn/demo/src/pages/index.astro
+import.meta.page.url
 
-import.meta.page.resolve('kitten.jpg') // resolves relative to the page import.meta is called from, instead of the component itself 
+/// resolves relative to the page import.meta is called from, instead of the component itself 
+/// IE: /home/projects/github-itt8wn/demo/src/pages/kitten.jpg
+import.meta.page.resolve('kitten.jpg')
 
-import.meta.request.url // behaves import.meta.url, but for the current request (like localhost:3000/page1/)
+/// behaves import.meta.url, but for the current request
+/// IE: http://localhost:3000/
+import.meta.request.url
 
-import.meta.request.resolve('kitten.jpg') // resolves relative to current request (like localhost:3000/page1/)
+/// resolves relative to current request
+/// IE: http://localhost:3000/kitten.jpg
+import.meta.request.resolve('kitten.jpg')
 
-import.meta.props // props, when within a component
+/// props, when within a component
+import.meta.props
 ```
 
 ```astro
