@@ -9,18 +9,18 @@ interface ImportMeta {
 
 	readonly resolve: ImportMetaResolve
 
-	readonly with: ImportMetaWith
+	readonly assets: ImportMetaAssets
 
 	readonly page: {
 		readonly url: string
 		readonly resolve: ImportMetaResolve
-		readonly with: ImportMetaWith
+		readonly assets: ImportMetaAssets
 	}
 
 	readonly request: {
 		readonly url: string
 		readonly resolve: ImportMetaResolve
-		readonly with: ImportMetaWith
+		readonly assets: ImportMetaAssets
 	}
 
 	readonly props: {
@@ -98,6 +98,6 @@ interface ImportMetaResolve {
 	(...goto: Array<string | URL>): string
 }
 
-interface ImportMetaWith {
-	(...goto: Array<string | URL>): string
+interface ImportMetaAssets {
+	add(...goto: Array<string | URL>): string
 }

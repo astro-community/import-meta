@@ -6,6 +6,6 @@ export interface Props {
 
 const { props } = import.meta
 
-props.src = import.meta.page.with(props.src)
+props.src = import.meta.page.assets.add(props.src)
 ---
 <img {...props} />

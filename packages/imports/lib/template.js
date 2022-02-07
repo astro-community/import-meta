@@ -10,9 +10,9 @@ export const headerJS = `let ${commaJoin(
 	`s=${symbolJS}`,
 	`m=globalThis[s]`,
 	`r=r=>({${commaJoin(
-		`with(id){${curlyJoin(
-			`return '/' + m.assetsName + '/' + m.assets.add(this.resolve(id)).hashname`,
-		)}}`,
+		`get assets() { const self = this; return { add(id){${curlyJoin(
+			`return '/' + m.assetsName + '/' + m.assets.add(self.resolve(id)).hashname`,
+		)}} } }`,
 		`get url(){return r}`,
 		`get resolve(){${
 			`return ((...paths) => paths.reduce(${
