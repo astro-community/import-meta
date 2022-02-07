@@ -49,6 +49,40 @@ export const importPlusPlugin = () => {
 			)
 			return options
 		},
+		resolveId(importeeId, importerId, options) {
+			if (!importeeId || !importeeId.includes('assert=')) return undefined
+
+			let [ resolvedId, search ] = importeeId.split(/(?<=^[^?]+)\?/)
+			const params = new URLSearchParams(search)
+
+			const assertJSON = params.get('assert')
+
+			if (!assertJSON) return undefined
+
+			params.delete('assert')
+
+			const searchParams = [ ...params ].length ? `?${params}` : ''
+
+			resolvedId = resolvedId.slice(0, -3).replace(
+				/^\/src\//,
+				internal.rootDir + 'src/'
+			) + searchParams
+
+			return this.resolve(resolvedId, importerId, { ...options, skipSelf: true }).then(
+				resolved => {
+					if (resolved == null) return undefined
+
+					let [ resolvedId, search ] = resolved.id.split(/(?<=^[^?]+)\?/)
+					let params = new URLSearchParams(search)
+
+					params.set('assert', assertJSON)
+
+					resolved.id = resolvedId + '.js?' + params
+
+					return resolved
+				}
+			)
+		},
 		load(importeeId) {
 			if (!importeeId || !importeeId.includes('assert=')) return undefined
 
@@ -83,7 +117,7 @@ export const importPlusPlugin = () => {
 					return fetch(resolveUrl).then(
 						response => response.json()
 					).then(
-						json => `export default ${JSON.stringify(json)}`
+						text => `export default ${JSON.stringify(text)}`
 					)
 
 				case 'raw':
