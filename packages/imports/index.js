@@ -1,28 +1,22 @@
 // @ts-check
 /// <reference path="./import.d.ts" />
 
+import * as assets from './lib/asset.js'
+import { promises as fs, createReadStream } from 'node:fs'
+import * as posix from './lib/posix.js'
+import * as template from './lib/template.js'
+
 import { MagicString } from './lib/magic-string.js'
 import acornImportAssertionsPlugin from './lib/acorn-plugin.js'
 
 /** @type {{ (): import('vite').Plugin }} */
 export const importPlusPlugin = () => {
-	const rootDir = getPosixPath(process.cwd()) + '/'
-
-	const symbolJS = `Symbol.for("import.meta")`
-	const headerJS = `let ${commaJoin(
-		`s=${symbolJS}`,
-		`m=(globalThis[s]=globalThis[s]||(globalThis[s]={fileHref:"",pageHref:"",requestHref:"",siteHref:"",props:{}}))`,
-		`r=r=>({${commaJoin(
-			`get url(){return r}`,
-			`get resolve(){${
-				`return ((...paths) => paths.reduce(${
-					`(u,p) => new URL(p, u), new URL(r, "file:"))`
-				}.pathname).bind(null)`
-			}}`,
-		)}})`,
-	)}`
+	const rootDir = posix.normalize(process.cwd()) + '/'
 
 	const internal = {
+		assetsName: '',
+		baseName: '',
+		distDir: '',
 		hostname: 'localhost',
 		https: false,
 		pagesDir: rootDir + 'src/pages/',
@@ -33,51 +27,63 @@ export const importPlusPlugin = () => {
 
 	return {
 		name: '@astropub/imports',
+		enforce: 'pre',
 		configResolved(config) {
-			const rootDir = getPosixPath(config.root) + '/'
+			const rootDir = posix.normalize(config.root) + '/'
 
+			internal.baseName = posix.normalize(config.base).replace(/^\/|\/$/g, '')
+
+			internal.assetsName = (internal.baseName ? internal.baseName + '/' : '') + posix.normalize(config.build.assetsDir)
+
+			internal.distDir = posix.normalize(config.build.outDir)
 			internal.hostname = typeof config.server.host === 'string' ? config.server.host : 'localhost'
 			internal.https = Boolean(config.server.https)
 			internal.pagesDir = rootDir + 'src/pages/'
 			internal.port = Number(config.server.port) || 3000
 			internal.rootDir = rootDir
 			internal.site = `http${internal.https ? 's' : ''}://${internal.hostname}${internal.port ? `:${internal.port}` : ``}/`
+
+			assets.data.baseName = internal.baseName
+			assets.data.assetsName = internal.assetsName
 		},
 		options(options) {
-			(options.acornInjectPlugins = options.acornInjectPlugins || []).push(
-				acornImportAssertionsPlugin
-			)
+			// @ts-ignore
+			(options.acornInjectPlugins = options.acornInjectPlugins || []).push(acornImportAssertionsPlugin)
+
 			return options
+		},
+		configureServer(server) {
+			server.middlewares.use((request, response, next) => {
+				const url = String(request.url)
+
+				const assetsLead = '/' + internal.assetsName + '/'
+
+				if (url.startsWith(assetsLead)) {
+					const assetFile = assets.data.assets.getFromServer(url.slice(assetsLead.length))
+
+					if (assetFile === null) next()
+					else createReadStream(assetFile).pipe(response)
+				} else next()
+			})
 		},
 		resolveId(importeeId, importerId, options) {
 			if (!importeeId || !importeeId.includes('assert=')) return undefined
 
-			let [ resolvedId, search ] = importeeId.split(/(?<=^[^?]+)\?/)
-			const params = new URLSearchParams(search)
+			let [ safeImporteeId, assert ] = posix.normalizeWithAssertions(importeeId)
 
-			const assertJSON = params.get('assert')
+			if (assert == null) return
 
-			if (!assertJSON) return undefined
+			safeImporteeId = safeImporteeId.replace(/^\/src\//, internal.rootDir + 'src/')
 
-			params.delete('assert')
-
-			const searchParams = [ ...params ].length ? `?${params}` : ''
-
-			resolvedId = resolvedId.slice(0, -3).replace(
-				/^\/src\//,
-				internal.rootDir + 'src/'
-			) + searchParams
-
-			return this.resolve(resolvedId, importerId, { ...options, skipSelf: true }).then(
+			return this.resolve(safeImporteeId, importerId, { ...options, skipSelf: true }).then(
 				resolved => {
-					if (resolved == null) return undefined
+					if (resolved == null) return null
 
-					let [ resolvedId, search ] = resolved.id.split(/(?<=^[^?]+)\?/)
-					let params = new URLSearchParams(search)
+					let [ resolvedId, resolvedParams ] = posix.normalizeWithParams(resolved.id)
 
-					params.set('assert', assertJSON)
+					resolvedParams.set('assert', JSON.stringify(assert))
 
-					resolved.id = resolvedId + '.js?' + params
+					resolved.id = resolvedId + '.js?' + resolvedParams
 
 					return resolved
 				}
@@ -86,26 +92,13 @@ export const importPlusPlugin = () => {
 		load(importeeId) {
 			if (!importeeId || !importeeId.includes('assert=')) return undefined
 
-			const [ resolvedId, search ] = importeeId.split(/(?<=^[^?]+)\?/)
-			const params = new URLSearchParams(search)
+			let [ safeImporteeId, assert ] = posix.normalizeWithAssertions(importeeId)
 
-			const assertJSON = params.get('assert')
-
-			if (!assertJSON) return undefined
-
-			params.delete('assert')
-
-			const assert = JSON.parse(assertJSON)
-			const searchParams = [ ...params ].length ? `?${params}` : ''
-
-			const resolveUrl = resolvedId.slice(0, -3).replace(
-				/^\/src\//,
-				internal.rootDir + 'src/'
-			) + searchParams
+			if (assert == null) return
 
 			switch (assert.type) {
-				case 'buffer':
-					return fetch(resolveUrl).then(
+				case 'arraybuffer':
+					return fetch(safeImporteeId).then(
 						response => response.arrayBuffer()
 					).then(
 						buffer => {
@@ -114,7 +107,7 @@ export const importPlusPlugin = () => {
 					)
 
 				case 'json':
-					return fetch(resolveUrl).then(
+					return fetch(safeImporteeId).then(
 						response => response.json()
 					).then(
 						text => `export default ${JSON.stringify(text)}`
@@ -122,18 +115,18 @@ export const importPlusPlugin = () => {
 
 				case 'raw':
 				case 'text':
-					return fetch(resolveUrl).then(
+					return fetch(safeImporteeId).then(
 						response => response.text()
 					).then(
 						text => `export default ${JSON.stringify(text)}`
 					)
 
 				case 'url':
-					return `export default ${JSON.stringify(resolveUrl)}`
+					return `export default ${JSON.stringify(safeImporteeId)}`
 
 				case 'javascript':
 				case 'js':
-					return fetch(resolveUrl).then(
+					return fetch(safeImporteeId).then(
 						response => response.text()
 					)
 				default:
@@ -141,7 +134,7 @@ export const importPlusPlugin = () => {
 			}
 		},
 		transform(code, importee) {
-			importee = getPosixPath(importee)
+			importee = posix.normalize(importee)
 
 			if (isScriptingExtension(importee)) {
 				const source = new MagicString(code)
@@ -150,11 +143,11 @@ export const importPlusPlugin = () => {
 				for (const index of [ ...code.matchAll(componentParamsMatch) ].map(
 					(match) => Object(match).index + match[0].length
 				).sort().reverse()) {
-					source.appendRight(index, `globalThis[${symbolJS}].props=$$props;`)
+					source.appendRight(index, `globalThis[${template.symbolJS}].props=$$props;`)
 				}
 
 				source.prepend(`{${curlyJoin(
-					headerJS,
+					template.headerJS,
 					`m.fileHref=${getJSON(importee)}`,
 					isPage ? `m.pageHref=m.fileHref` : ``,
 					`m.siteHref=${getJSON(internal.site)}`,
@@ -182,6 +175,14 @@ export const importPlusPlugin = () => {
 
 			return undefined
 		},
+		async buildEnd() {
+			for (const [path, asset] of assets.data.assets) {
+				const assetDir = new URL(internal.distDir + internal.assetsName + '/', 'file:')
+
+				await fs.mkdir(assetDir, { recursive: true })
+				await fs.copyFile(new URL(path, 'file:'), new URL(asset.hashname, assetDir))
+			}
+		},
 	}
 }
 
@@ -192,12 +193,6 @@ const componentParamsMatch = /\(\s*\$\$result\s*,\s*\$\$props\s*,\s*\$\$slots\s*
 
 /** Regular expression test to match scripting extensions. */
 const isScriptingExtension = RegExp.prototype.test.bind(/\.(astro|[cm]?[jt]sx?)$/i)
-
-/** Regular expression test to match scripting extensions. */
-const isExportingExtension = RegExp.prototype.test.bind(/\.(astro|[cm]?[jt]sx?|json)$/i)
-
-/** Returns the posix-normalized path from the given path. */
-const getPosixPath = (/** @type {string} */ path) => path.replace(/\\+/g, '/').replace(/^(?=[A-Za-z]:\/)/, '/').replace(/%/g, '%25').replace(/\n/g, '%0A').replace(/\r/g, '%0D').replace(/\t/g, '%09')
 
 /** Returns a collection of strings joined by a comma. */
 const commaJoin = (/** @type {string[]} */ ...values) => values.join(',')
